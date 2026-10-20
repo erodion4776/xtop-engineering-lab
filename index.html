@@ -4,221 +4,799 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b111c">
 <title>XTOP Engineering Lab</title>
+
 <script src="https://cdn.jsdelivr.net/npm/mathjs@14.8.1/lib/browser/math.js"></script>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
 <style>
-:root{color-scheme:dark;--bg:#0b111c;--panel:#141f2f;--line:#2b3b50;--green:#79e3c0;--text:#e7edf6;--muted:#91a0b5}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,sans-serif}
-header{padding:22px;background:#101a28;border-bottom:1px solid var(--line)}
-header h1{margin:0;font-size:23px}header p{color:var(--muted);margin:5px 0 0;font-size:12px}
-nav{display:flex;gap:7px;padding:12px;overflow:auto;background:#0d1724;position:sticky;top:0}
-button,select{cursor:pointer}nav button{white-space:nowrap;background:#172436;color:var(--text);border:1px solid var(--line);padding:10px;border-radius:8px}
-nav button.active,.run{background:var(--green);color:#09221d;border-color:var(--green);font-weight:700}
-main{max-width:1000px;margin:auto;padding:15px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:15px}
-h2{font-size:19px;margin:0 0 12px}h3{font-size:14px}
-p,.muted{color:var(--muted);font-size:13px;line-height:1.6}
-label{display:block;color:#9cacc0;font-size:11px;margin:13px 0 6px}
-input,textarea,select{width:100%;padding:12px;background:#080e17;border:1px solid var(--line);border-radius:7px;color:var(--text);font:14px ui-monospace,monospace}
-textarea{min-height:105px;resize:vertical}
-button.run{padding:11px 15px;border:0;border-radius:7px;margin-top:12px}
-.output{white-space:pre-wrap;overflow-wrap:anywhere;background:#080e17;border:1px solid var(--line);padding:13px;border-radius:8px;min-height:48px;margin-top:13px;font:13px ui-monospace,monospace}
-.page{display:none}.page.active{display:block}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-#graph{width:100%;height:350px}.small{font-size:11px}
-footer{padding:20px;text-align:center;color:#72849b;font-size:11px}
-@media(max-width:600px){.grid{grid-template-columns:1fr}main{padding:10px}.panel{padding:14px}header{padding:18px}}
+:root {
+  color-scheme: dark;
+  --bg: #0b111c;
+  --panel: #141f2f;
+  --line: #2b3b50;
+  --green: #79e3c0;
+  --text: #e7edf6;
+  --muted: #91a0b5;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px system-ui, sans-serif;
+}
+header {
+  padding: 22px;
+  background: #101a28;
+  border-bottom: 1px solid var(--line);
+}
+header h1 { margin: 0; font-size: 23px; }
+header p { color: var(--muted); margin: 5px 0 0; font-size: 12px; }
+nav {
+  display: flex;
+  gap: 7px;
+  padding: 12px;
+  overflow-x: auto;
+  background: #0d1724;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+button, select { cursor: pointer; }
+nav button {
+  white-space: nowrap;
+  background: #172436;
+  color: var(--text);
+  border: 1px solid var(--line);
+  padding: 10px;
+  border-radius: 8px;
+}
+nav button.active, .run {
+  background: var(--green);
+  color: #09221d;
+  border-color: var(--green);
+  font-weight: 700;
+}
+main { max-width: 1000px; margin: auto; padding: 15px; }
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 15px;
+}
+h2 { font-size: 19px; margin: 0 0 12px; }
+h3 { font-size: 14px; }
+p, .muted { color: var(--muted); font-size: 13px; line-height: 1.6; }
+label {
+  display: block;
+  color: #9cacc0;
+  font-size: 11px;
+  margin: 13px 0 6px;
+}
+input, textarea, select {
+  width: 100%;
+  padding: 12px;
+  background: #080e17;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--text);
+  font: 14px ui-monospace, monospace;
+}
+textarea { min-height: 105px; resize: vertical; }
+button.run {
+  padding: 11px 15px;
+  border: 0;
+  border-radius: 7px;
+  margin-top: 12px;
+}
+button:disabled { opacity: .6; cursor: wait; }
+.output {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: #080e17;
+  border: 1px solid var(--line);
+  padding: 13px;
+  border-radius: 8px;
+  min-height: 48px;
+  margin-top: 13px;
+  font: 13px ui-monospace, monospace;
+}
+.page { display: none; }
+.page.active { display: block; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+#graph { width: 100%; height: 350px; }
+.small { font-size: 11px; }
+footer { padding: 20px; text-align: center; color: #72849b; font-size: 11px; }
+.action-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.action-row button {
+  border: 1px solid var(--line);
+  background: #172436;
+  color: var(--text);
+  padding: 9px 12px;
+  border-radius: 7px;
+}
+@media(max-width:600px) {
+  .grid { grid-template-columns: 1fr; }
+  main { padding: 10px; }
+  .panel { padding: 14px; }
+  header { padding: 18px; }
+}
 </style>
 </head>
 <body>
 <header>
-<h1>✳ XTOP Engineering Lab</h1>
-<p>Scientific computing · Engineering tools · Visual analysis</p>
+  <h1>✳ XTOP Engineering Lab</h1>
+  <p>Scientific computing · Engineering tools · Visual analysis</p>
 </header>
-<nav>
-<button class="active" onclick="showPage('calc',this)">Workspace</button>
-<button onclick="showPage('plot',this)">Plotter</button>
-<button onclick="showPage('matrix',this)">Matrix Lab</button>
-<button onclick="showPage('eng',this)">Engineering</button>
-<button onclick="showPage('python',this)">Python</button>
+
+<nav aria-label="Engineering Lab tools">
+  <button class="active" onclick="showPage('calc',this)">Workspace</button>
+  <button onclick="showPage('plot',this)">Plotter</button>
+  <button onclick="showPage('matrix',this)">Matrix Lab</button>
+  <button onclick="showPage('eng',this)">Engineering</button>
+  <button onclick="showPage('units',this)">Unit Converter</button>
+  <button onclick="showPage('production',this)">Production Lab</button>
+  <button onclick="showPage('python',this)">Python</button>
 </nav>
+
 <main>
 <section id="calc" class="page active">
-<div class="panel">
-<h2>Scientific workspace</h2>
-<p>Enter a mathematical expression. Examples: <code>sqrt(144)+2^3</code>, <code>sin(pi/2)</code>, <code>log(100,10)</code>, <code>derivative('x^3','x')</code>.</p>
-<label>EXPRESSION</label>
-<textarea id="expression">sqrt(144) + 2^3</textarea>
-<button class="run" onclick="calculate()">Run calculation ↗</button>
-<div class="output" id="calcOut">Your answer appears here.</div>
-</div>
-<div class="panel">
-<h2>Session history</h2>
-<div id="history" class="muted">Your recent calculations will appear here.</div>
-</div>
+  <div class="panel">
+    <h2>Scientific workspace</h2>
+    <p>
+      Calculate expressions and define variables that remain available
+      until you reset the workspace. Examples:
+      <code>sqrt(144)+2^3</code>, <code>sin(pi/2)</code>,
+      <code>force = 1000</code>, <code>stress = force / area</code>.
+    </p>
+    <label for="expression">EXPRESSION</label>
+    <textarea id="expression">sqrt(144) + 2^3</textarea>
+    <div class="action-row">
+      <button class="run" onclick="calculate()">Run calculation ↗</button>
+      <button onclick="clearWorkspace()">Reset variables</button>
+      <button onclick="clearHistory()">Clear history</button>
+    </div>
+    <div class="output" id="calcOut" aria-live="polite">Your answer appears here.</div>
+  </div>
+  <div class="panel">
+    <h2>Workspace variables</h2>
+    <p>Variables are held in memory for this browser session.</p>
+    <div class="output" id="variablesOut">No variables defined.</div>
+  </div>
+  <div class="panel">
+    <h2>Session history</h2>
+    <div id="history" class="muted">Your recent calculations will appear here.</div>
+  </div>
 </section>
 
 <section id="plot" class="page">
-<div class="panel">
-<h2>Function plotter</h2>
-<p>Use x as the independent variable. Examples: <code>sin(x)</code>, <code>x^2</code>, <code>exp(-x^2)</code>.</p>
-<label>FUNCTION 1</label><input id="f1" value="sin(x)">
-<label>FUNCTION 2 (optional)</label><input id="f2" value="cos(x)">
-<div class="grid">
-<div><label>X MINIMUM</label><input id="xmin" type="number" value="-10"></div>
-<div><label>X MAXIMUM</label><input id="xmax" type="number" value="10"></div>
-</div>
-<button class="run" onclick="drawGraph()">Plot functions ↗</button>
-<div id="graph"></div>
-</div>
+  <div class="panel">
+    <h2>Function plotter</h2>
+    <p>Use x as the independent variable. Examples: <code>sin(x)</code>, <code>x^2</code>, <code>exp(-x^2)</code>.</p>
+    <label for="f1">FUNCTION 1</label>
+    <input id="f1" value="sin(x)">
+    <label for="f2">FUNCTION 2 (optional)</label>
+    <input id="f2" value="cos(x)">
+    <div class="grid">
+      <div>
+        <label for="xmin">X MINIMUM</label>
+        <input id="xmin" type="number" value="-10">
+      </div>
+      <div>
+        <label for="xmax">X MAXIMUM</label>
+        <input id="xmax" type="number" value="10">
+      </div>
+    </div>
+    <button class="run" onclick="drawGraph()">Plot functions ↗</button>
+    <div id="graph"></div>
+    <div id="plotError" class="output" hidden></div>
+  </div>
 </section>
 
 <section id="matrix" class="page">
-<div class="panel">
-<h2>Matrix laboratory</h2>
-<p>Enter one row per line, with values separated by commas. Example: <code>1,2<br>3,4</code>.</p>
-<div class="grid">
-<div><label>MATRIX A</label><textarea id="ma">1, 2
-3, 4</textarea></div>
-<div><label>MATRIX B</label><textarea id="mb">5, 6
-7, 8</textarea></div>
-</div>
-<label>OPERATION</label>
-<select id="mop">
-<option value="multiply">A × B — Multiply</option>
-<option value="add">A + B — Add</option>
-<option value="subtract">A − B — Subtract</option>
-<option value="transpose">Transpose A</option>
-<option value="det">Determinant A</option>
-<option value="inv">Inverse A</option>
-</select>
-<button class="run" onclick="matrixCalc()">Calculate matrix ↗</button>
-<div class="output" id="matrixOut">Matrix result appears here.</div>
-</div>
+  <div class="panel">
+    <h2>Matrix laboratory</h2>
+    <p>Enter one row per line, with values separated by commas or spaces.</p>
+    <div class="grid">
+      <div>
+        <label for="ma">MATRIX A</label>
+        <textarea id="ma">1, 2
+3, 4</textarea>
+      </div>
+      <div>
+        <label for="mb">MATRIX B</label>
+        <textarea id="mb">5, 6
+7, 8</textarea>
+      </div>
+    </div>
+    <label for="mop">OPERATION</label>
+    <select id="mop">
+      <option value="multiply">A × B — Multiply</option>
+      <option value="add">A + B — Add</option>
+      <option value="subtract">A − B — Subtract</option>
+      <option value="transpose">Transpose A</option>
+      <option value="det">Determinant A</option>
+      <option value="inv">Inverse A</option>
+    </select>
+    <button class="run" onclick="matrixCalc()">Calculate matrix ↗</button>
+    <div class="output" id="matrixOut">Matrix result appears here.</div>
+  </div>
 </section>
 
 <section id="eng" class="page">
-<div class="panel">
-<h2>Normal stress calculator</h2>
-<p>Engineering formula: normal stress = axial force ÷ cross-sectional area.</p>
-<label>FORCE (N)</label><input id="force" type="number" value="1000">
-<label>AREA (m²)</label><input id="area" type="number" value="0.002">
-<button class="run" onclick="stressCalc()">Calculate stress ↗</button>
-<div class="output" id="stressOut">Result appears here.</div>
-<p class="small">Check units and assumptions independently before using results for safety-critical work.</p>
-</div>
-<div class="panel">
-<h2>Next engineering modules</h2>
-<p>Planned: unit conversion, numerical methods, root finding, interpolation, statistics, production time study, line balancing, optimization and control-system simulation.</p>
-</div>
+  <div class="panel">
+    <h2>Normal stress calculator</h2>
+    <p>Normal stress = axial force divided by cross-sectional area.</p>
+    <label for="force">FORCE (N)</label>
+    <input id="force" type="number" value="1000">
+    <label for="area">AREA (m²)</label>
+    <input id="area" type="number" value="0.002">
+    <button class="run" onclick="stressCalc()">Calculate stress ↗</button>
+    <div class="output" id="stressOut">Result appears here.</div>
+    <p class="small">Verify units, loading assumptions, and applicable engineering standards before relying on results for safety-critical work.</p>
+  </div>
+  <div class="panel">
+    <h2>Engineering roadmap</h2>
+    <p>Planned modules: numerical methods, root finding, interpolation, statistics, production time study, line balancing, optimisation, and control-system simulation.</p>
+  </div>
+</section>
+
+<section id="units" class="page">
+  <div class="panel">
+    <h2>Engineering unit converter</h2>
+    <p>Convert common engineering measurements locally in your browser.</p>
+    <label for="unitType">QUANTITY</label>
+    <select id="unitType" onchange="updateUnits()">
+      <option value="length">Length</option>
+      <option value="area">Area</option>
+      <option value="force">Force</option>
+      <option value="pressure">Pressure</option>
+      <option value="mass">Mass</option>
+      <option value="temperature">Temperature</option>
+    </select>
+    <label for="unitValue">VALUE</label>
+    <input id="unitValue" type="number" value="1000">
+    <label for="unitFrom">FROM</label>
+    <select id="unitFrom"></select>
+    <label for="unitTo">TO</label>
+    <select id="unitTo"></select>
+    <button class="run" onclick="convertUnits()">Convert ↗</button>
+    <div class="output" id="unitOut">Your converted value appears here.</div>
+  </div>
+</section>
+
+<section id="production" class="page">
+  <div class="panel">
+    <h2>Production engineering lab</h2>
+    <p>Calculate observed time, normal time, and standard time for a work study.</p>
+    <label for="observedTime">OBSERVED TIME PER CYCLE (SECONDS)</label>
+    <input id="observedTime" type="number" value="60" min="0" step="any">
+    <label for="rating">PERFORMANCE RATING (%)</label>
+    <input id="rating" type="number" value="100" min="0" step="any">
+    <label for="allowance">ALLOWANCE (% OF STANDARD TIME)</label>
+    <input id="allowance" type="number" value="15" min="0" max="99.99" step="any">
+    <button class="run" onclick="calculateWorkStudy()">Calculate work study ↗</button>
+    <div class="output" id="workStudyOut">Your work-study results appear here.</div>
+    <p class="small">This calculation assumes allowance is expressed as a percentage of standard time. Confirm your organisation's work-study convention.</p>
+  </div>
 </section>
 
 <section id="python" class="page">
-<div class="panel">
-<h2>Python workspace</h2>
-<p>Python runs in your browser using Pyodide. The first run downloads the runtime and requires an internet connection. Not every desktop Python package is supported.</p>
-<label>PYTHON CODE</label>
-<textarea id="pycode">print("Welcome to XTOP Engineering Lab")
+  <div class="panel">
+    <h2>Python workspace</h2>
+    <p>Python runs in your browser using Pyodide. The first run downloads the runtime and requires internet access. Not every desktop Python package is supported.</p>
+    <label for="pycode">PYTHON CODE</label>
+    <textarea id="pycode">print("Welcome to XTOP Engineering Lab")
 print(sum([10, 20, 30]))</textarea>
-<button class="run" id="pybutton" onclick="runPython()">Start Python and run ↗</button>
-<div class="output" id="pyout">Python has not started yet.</div>
-</div>
+    <button class="run" id="pybutton" onclick="runPython()">Start Python and run ↗</button>
+    <div class="output" id="pyout" aria-live="polite">Python has not started yet.</div>
+  </div>
 </section>
 </main>
-<footer>XTOP Retail Technologies · Engineering Lab Preview v0.1</footer>
+
+<footer>XTOP Retail Technologies · Engineering Lab Preview v0.2</footer>
 
 <script>
-const historyItems=[];
-function showPage(id,button){
- document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
- document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
- document.getElementById(id).classList.add('active');
- button.classList.add('active');
- if(id==='plot')setTimeout(drawGraph,100);
-}
-function calculate(){
- const input=document.getElementById('expression').value;
- try{
-  const answer=math.evaluate(input);
-  const output=typeof answer==='number'?math.format(answer,{precision:12}):math.format(answer,{precision:8});
-  document.getElementById('calcOut').textContent=output;
-  historyItems.unshift({input,output});
-  document.getElementById('history').innerHTML=historyItems.slice(0,10).map((h,i)=>
-   '<p><b>Input:</b> '+escapeHtml(h.input)+'<br><b>Output:</b> '+escapeHtml(h.output)+'</p>'
-  ).join('');
- }catch(e){document.getElementById('calcOut').textContent='Error: '+e.message}
-}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function drawGraph(){
- try{
-  const min=Number(document.getElementById('xmin').value),max=Number(document.getElementById('xmax').value);
-  if(!Number.isFinite(min)||!Number.isFinite(max)||min>=max)throw Error('X maximum must be greater than X minimum.');
-  const xs=[],ys1=[],ys2=[],n=300;
-  const a=math.compile(document.getElementById('f1').value);
-  const second=document.getElementById('f2').value.trim();
-  const b=second?math.compile(second):null;
-  for(let i=0;i<=n;i++){
-   const x=min+(max-min)*i/n;xs.push(x);
-   try{const y=a.evaluate({x});ys1.push(typeof y==='number'&&Number.isFinite(y)?y:null)}catch{ys1.push(null)}
-   if(b){try{const y=b.evaluate({x});ys2.push(typeof y==='number'&&Number.isFinite(y)?y:null)}catch{ys2.push(null)}}
+"use strict";
+
+const historyItems = loadHistory();
+const parser = math.parser();
+
+function loadHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("xtopHistory") || "[]");
+    return Array.isArray(saved) ? saved.slice(0, 50) : [];
+  } catch {
+    return [];
   }
-  const data=[{x:xs,y:ys1,type:'scatter',mode:'lines',name:document.getElementById('f1').value}];
-  if(b)data.push({x:xs,y:ys2,type:'scatter',mode:'lines',name:second});
-  Plotly.newPlot('graph',data,{paper_bgcolor:'#141f2f',plot_bgcolor:'#0b111c',font:{color:'#e7edf6'},margin:{l:45,r:15,t:15,b:45},xaxis:{gridcolor:'#2b3b50'},yaxis:{gridcolor:'#2b3b50'},legend:{orientation:'h'}},{responsive:true,displaylogo:false});
- }catch(e){document.getElementById('graph').innerHTML='<p>Error: '+escapeHtml(e.message)+'</p>'}
 }
-function readMatrix(id){
- const rows=document.getElementById(id).value.trim().split(/\n+/).map(r=>r.trim().split(/[,\s]+/).filter(Boolean).map(Number));
- if(!rows.length||rows.some(r=>r.some(n=>!Number.isFinite(n))))throw Error('Enter valid numeric matrix values.');
- if(rows.some(r=>r.length!==rows[0].length))throw Error('Every row must have the same number of columns.');
- return rows;
+
+function saveHistory() {
+  try {
+    localStorage.setItem("xtopHistory", JSON.stringify(historyItems.slice(0, 50)));
+  } catch (e) {
+    console.warn("History could not be saved.", e);
+  }
 }
-function matrixCalc(){
- try{
-  const a=readMatrix('ma'),b=readMatrix('mb'),op=document.getElementById('mop').value;
+
+function showPage(id, button) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  button.classList.add("active");
+
+  if (id === "plot") setTimeout(drawGraph, 100);
+  if (id === "units") updateUnits();
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[c]);
+}
+
+function renderHistory() {
+  const container = document.getElementById("history");
+
+  if (!historyItems.length) {
+    container.textContent = "No calculations saved yet.";
+    return;
+  }
+
+  container.innerHTML = historyItems.map(item =>
+    `<p><b>Input:</b> ${escapeHtml(item.input)}<br><b>Output:</b> ${escapeHtml(item.output)}</p>`
+  ).join("");
+}
+
+function renderVariables() {
+  const out = document.getElementById("variablesOut");
+
+  try {
+    const entries = parser.getAll();
+    const keys = Object.keys(entries);
+
+    if (!keys.length) {
+      out.textContent = "No variables defined.";
+      return;
+    }
+
+    out.textContent = keys.map(key => {
+      try {
+        return `${key} = ${math.format(entries[key], { precision: 8 })}`;
+      } catch {
+        return `${key} = ${String(entries[key])}`;
+      }
+    }).join("\n");
+  } catch {
+    out.textContent = "Unable to display workspace variables.";
+  }
+}
+
+function calculate() {
+  const input = document.getElementById("expression").value.trim();
+  const out = document.getElementById("calcOut");
+
+  if (!input) {
+    out.textContent = "Enter an expression first.";
+    return;
+  }
+
+  try {
+    const answer = parser.evaluate(input);
+    const output = answer === undefined
+      ? "Variable or command updated."
+      : math.format(answer, { precision: 12 });
+
+    out.textContent = output;
+    historyItems.unshift({ input, output, time: Date.now() });
+
+    if (historyItems.length > 50) historyItems.length = 50;
+
+    saveHistory();
+    renderHistory();
+    renderVariables();
+  } catch (e) {
+    out.textContent = "Error: " + e.message;
+  }
+}
+
+function clearWorkspace() {
+  parser.clear();
+  renderVariables();
+  document.getElementById("calcOut").textContent = "Workspace variables reset.";
+}
+
+function clearHistory() {
+  historyItems.length = 0;
+  saveHistory();
+  renderHistory();
+}
+
+function drawGraph() {
+  const graph = document.getElementById("graph");
+  const errorBox = document.getElementById("plotError");
+
+  try {
+    if (typeof Plotly === "undefined") {
+      throw Error("Plotting library did not load. Check your internet connection.");
+    }
+
+    const min = Number(document.getElementById("xmin").value);
+    const max = Number(document.getElementById("xmax").value);
+
+    if (!Number.isFinite(min) || !Number.isFinite(max) || min >= max) {
+      throw Error("X maximum must be greater than X minimum.");
+    }
+
+    const expression1 = document.getElementById("f1").value.trim();
+    const expression2 = document.getElementById("f2").value.trim();
+
+    if (!expression1) throw Error("Enter the first function.");
+
+    const fn1 = math.compile(expression1);
+    const fn2 = expression2 ? math.compile(expression2) : null;
+    const xs = [], ys1 = [], ys2 = [];
+    const n = 300;
+
+    for (let i = 0; i <= n; i++) {
+      const x = min + (max - min) * i / n;
+      xs.push(x);
+
+      try {
+        const y = fn1.evaluate({ x });
+        ys1.push(typeof y === "number" && Number.isFinite(y) ? y : null);
+      } catch {
+        ys1.push(null);
+      }
+
+      if (fn2) {
+        try {
+          const y = fn2.evaluate({ x });
+          ys2.push(typeof y === "number" && Number.isFinite(y) ? y : null);
+        } catch {
+          ys2.push(null);
+        }
+      }
+    }
+
+    const data = [{
+      x: xs,
+      y: ys1,
+      type: "scatter",
+      mode: "lines",
+      name: expression1
+    }];
+
+    if (fn2) {
+      data.push({
+        x: xs,
+        y: ys2,
+        type: "scatter",
+        mode: "lines",
+        name: expression2
+      });
+    }
+
+    errorBox.hidden = true;
+
+    Plotly.newPlot("graph", data, {
+      paper_bgcolor: "#141f2f",
+      plot_bgcolor: "#0b111c",
+      font: { color: "#e7edf6" },
+      margin: { l: 45, r: 15, t: 15, b: 45 },
+      xaxis: { gridcolor: "#2b3b50", title: "x" },
+      yaxis: { gridcolor: "#2b3b50", title: "y" },
+      legend: { orientation: "h" }
+    }, { responsive: true, displaylogo: false });
+  } catch (e) {
+    errorBox.hidden = false;
+    errorBox.textContent = "Plot error: " + e.message;
+  }
+}
+
+function readMatrix(id) {
+  const text = document.getElementById(id).value.trim();
+  if (!text) throw Error("Enter matrix values.");
+
+  const rows = text.split(/\n+/).map(row =>
+    row.trim().split(/[,\s]+/).filter(Boolean).map(Number)
+  );
+
+  if (!rows.length || rows.some(row =>
+    !row.length || row.some(n => !Number.isFinite(n))
+  )) {
+    throw Error("Enter valid numeric matrix values.");
+  }
+
+  if (rows.some(row => row.length !== rows[0].length)) {
+    throw Error("Every row must have the same number of columns.");
+  }
+
+  return rows;
+}
+
+function matrixCalc() {
+  try {
+    const a = readMatrix("ma");
+    const op = document.getElementById("mop").value;
+    let result;
+
+    if (op === "transpose") {
+      result = math.transpose(a).toArray();
+    } else if (op === "det" || op === "inv") {
+      if (a.length !== a[0].length) {
+        throw Error("Determinant and inverse require a square matrix.");
+      }
+      result = op === "det" ? math.det(a) : math.inv(a).toArray();
+    } else {
+      const b = readMatrix("mb");
+
+      if (op === "add" || op === "subtract") {
+        if (a.length !== b.length || a[0].length !== b[0].length) {
+          throw Error("Addition and subtraction require matching dimensions.");
+        }
+      }
+
+      if (op === "multiply" && a[0].length !== b.length) {
+        throw Error("Columns in A must equal rows in B for multiplication.");
+      }
+
+      result = op === "multiply"
+        ? math.multiply(a, b)
+        : op === "add"
+          ? math.add(a, b)
+          : math.subtract(a, b);
+
+      if (result && typeof result.toArray === "function") {
+        result = result.toArray();
+      }
+    }
+
+    document.getElementById("matrixOut").textContent =
+      typeof result === "number"
+        ? math.format(result, { precision: 12 })
+        : JSON.stringify(result, null, 2);
+  } catch (e) {
+    document.getElementById("matrixOut").textContent = "Error: " + e.message;
+  }
+}
+
+function stressCalc() {
+  const f = Number(document.getElementById("force").value);
+  const a = Number(document.getElementById("area").value);
+  const out = document.getElementById("stressOut");
+
+  if (
+    document.getElementById("force").value.trim() === "" ||
+    document.getElementById("area").value.trim() === "" ||
+    !Number.isFinite(f) || !Number.isFinite(a) || a <= 0
+  ) {
+    out.textContent = "Enter a valid force and an area greater than zero.";
+    return;
+  }
+
+  const pa = f / a;
+
+  out.textContent =
+    pa.toLocaleString() + " Pa\n" +
+    (pa / 1e6).toLocaleString(undefined, { maximumFractionDigits: 6 }) + " MPa";
+}
+
+const unitDefinitions = {
+  length: {
+    m: 1,
+    mm: 0.001,
+    cm: 0.01,
+    km: 1000,
+    inch: 0.0254,
+    ft: 0.3048
+  },
+  area: {
+    "m²": 1,
+    "cm²": 0.0001,
+    "mm²": 0.000001,
+    "ft²": 0.09290304
+  },
+  force: {
+    N: 1,
+    kN: 1000,
+    MN: 1000000,
+    lbf: 4.448221615
+  },
+  pressure: {
+    Pa: 1,
+    kPa: 1000,
+    MPa: 1000000,
+    bar: 100000,
+    psi: 6894.757293
+  },
+  mass: {
+    kg: 1,
+    g: 0.001,
+    tonne: 1000,
+    lb: 0.45359237
+  },
+  temperature: {
+    "°C": 1,
+    "°F": 1,
+    K: 1
+  }
+};
+
+function updateUnits() {
+  const type = document.getElementById("unitType").value;
+  const units = Object.keys(unitDefinitions[type]);
+
+  for (const id of ["unitFrom", "unitTo"]) {
+    const select = document.getElementById(id);
+    select.replaceChildren();
+
+    units.forEach(unit => {
+      const option = document.createElement("option");
+      option.value = unit;
+      option.textContent = unit;
+      select.appendChild(option);
+    });
+  }
+
+  if (type === "temperature") {
+    document.getElementById("unitFrom").value = "°C";
+    document.getElementById("unitTo").value = "°F";
+  } else {
+    document.getElementById("unitTo").selectedIndex =
+      Math.min(1, units.length - 1);
+  }
+
+  convertUnits();
+}
+
+function convertUnits() {
+  const type = document.getElementById("unitType").value;
+  const valueText = document.getElementById("unitValue").value;
+  const value = Number(valueText);
+  const from = document.getElementById("unitFrom").value;
+  const to = document.getElementById("unitTo").value;
+  const out = document.getElementById("unitOut");
+
+  if (valueText.trim() === "" || !Number.isFinite(value)) {
+    out.textContent = "Enter a valid numeric value.";
+    return;
+  }
+
   let result;
-  if(op==='transpose')result=math.transpose(a).toArray();
-  else if(op==='det')result=math.det(a);
-  else if(op==='inv')result=math.inv(a).toArray();
-  else{
-   if(op==='add'||op==='subtract'){
-    if(a.length!==b.length||a[0].length!==b[0].length)throw Error('Addition and subtraction require matching matrix dimensions.');
-   }
-   result=(op==='multiply'?math.multiply(a,b):op==='add'?math.add(a,b):math.subtract(a,b));
-   if(result.toArray)result=result.toArray();
+
+  if (type === "temperature") {
+    let celsius;
+
+    if (from === "°C") celsius = value;
+    else if (from === "°F") celsius = (value - 32) * 5 / 9;
+    else celsius = value - 273.15;
+
+    if (to === "°C") result = celsius;
+    else if (to === "°F") result = celsius * 9 / 5 + 32;
+    else result = celsius + 273.15;
+  } else {
+    result = value * unitDefinitions[type][from] / unitDefinitions[type][to];
   }
-  document.getElementById('matrixOut').textContent=typeof result==='number'?String(result):JSON.stringify(result,null,2);
- }catch(e){document.getElementById('matrixOut').textContent='Error: '+e.message}
+
+  out.textContent =
+    `${value} ${from} = ${Number(result.toPrecision(12))} ${to}`;
 }
-function stressCalc(){
- const f=Number(document.getElementById('force').value),a=Number(document.getElementById('area').value);
- if(!Number.isFinite(f)||!Number.isFinite(a)||a<=0){document.getElementById('stressOut').textContent='Enter a valid force and area greater than zero.';return}
- const pa=f/a;
- document.getElementById('stressOut').textContent=pa.toLocaleString()+' Pa\n'+(pa/1e6).toLocaleString(undefined,{maximumFractionDigits:6})+' MPa';
+
+function calculateWorkStudy() {
+  const observedText = document.getElementById("observedTime").value;
+  const ratingText = document.getElementById("rating").value;
+  const allowanceText = document.getElementById("allowance").value;
+
+  const observed = Number(observedText);
+  const rating = Number(ratingText);
+  const allowance = Number(allowanceText);
+  const out = document.getElementById("workStudyOut");
+
+  if (
+    observedText.trim() === "" ||
+    ratingText.trim() === "" ||
+    allowanceText.trim() === "" ||
+    !Number.isFinite(observed) || observed <= 0 ||
+    !Number.isFinite(rating) || rating < 0 ||
+    !Number.isFinite(allowance) || allowance < 0 || allowance >= 100
+  ) {
+    out.textContent =
+      "Enter a positive observed time, a non-negative rating, and an allowance from 0% to below 100%.";
+    return;
+  }
+
+  const normalTime = observed * rating / 100;
+  const standardTime = normalTime / (1 - allowance / 100);
+
+  out.textContent =
+    `Observed time: ${observed.toFixed(3)} seconds\n` +
+    `Normal time: ${normalTime.toFixed(3)} seconds\n` +
+    `Standard time: ${standardTime.toFixed(3)} seconds\n` +
+    `Estimated cycles per hour: ${(3600 / standardTime).toFixed(2)}`;
 }
+
 let pyodidePromise;
-async function runPython(){
- const button=document.getElementById('pybutton'),out=document.getElementById('pyout');
- button.disabled=true;out.textContent='Loading Python runtime…';
- try{
-  if(!pyodidePromise){
-   pyodidePromise=new Promise((resolve,reject)=>{
-    const s=document.createElement('script');
-    s.src='https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js';
-    s.onload=()=>loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/'}).then(resolve).catch(reject);
-    s.onerror=()=>reject(Error('Could not download Python. Check your internet connection.'));
-    document.head.appendChild(s);
-   });
+let pyodideInstance;
+let pythonBusy = false;
+
+async function runPython() {
+  const button = document.getElementById("pybutton");
+  const out = document.getElementById("pyout");
+
+  if (pythonBusy) return;
+  pythonBusy = true;
+  button.disabled = true;
+  out.textContent = "Loading Python runtime…";
+
+  try {
+    if (!pyodidePromise) {
+      pyodidePromise = new Promise((resolve, reject) => {
+        const existing = document.querySelector('script[data-pyodide="true"]');
+
+        if (existing) {
+          existing.addEventListener("load", () => {
+            loadPyodide({
+              indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/"
+            }).then(resolve).catch(reject);
+          }, { once: true });
+
+          existing.addEventListener("error", () =>
+            reject(Error("Could not download Python.")), { once: true });
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.dataset.pyodide = "true";
+        script.src = "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js";
+        script.onload = () => {
+          loadPyodide({
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/"
+          }).then(resolve).catch(reject);
+        };
+        script.onerror = () =>
+          reject(Error("Could not download Python. Check your connection."));
+        document.head.appendChild(script);
+      });
+    }
+
+    pyodideInstance = await pyodidePromise;
+    const code = document.getElementById("pycode").value;
+
+    let stdout = "";
+    let stderr = "";
+
+    pyodideInstance.setStdout({
+      batched: s => { stdout += s + "\n"; }
+    });
+    pyodideInstance.setStderr({
+      batched: s => { stderr += s + "\n"; }
+    });
+
+    await pyodideInstance.runPythonAsync(code);
+
+    out.textContent = stdout || stderr ||
+      "Python finished. Use print(...) to display results.";
+  } catch (e) {
+    out.textContent = "Python error: " + e.message;
+    pyodidePromise = null;
+    pyodideInstance = null;
+  } finally {
+    pythonBusy = false;
+    button.disabled = false;
   }
-  const py=await pyodidePromise;
-  const code=document.getElementById('pycode').value;
-  py.setStdout({batched:s=>{out.textContent+=s}});
-  out.textContent='';
-  await py.runPythonAsync(code);
-  if(!out.textContent)out.textContent='Python finished. Use print(...) to display results.';
- }catch(e){out.textContent='Python error: '+e.message;pyodidePromise=null}
- finally{button.disabled=false}
 }
+
+renderHistory();
+renderVariables();
+updateUnits();
 </script>
 </body>
 </html>
